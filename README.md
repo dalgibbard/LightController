@@ -1,3 +1,24 @@
+This is a Revised Version of benjaf's Aquarium Lighting Controller.
+
+This version has the following modifications:
+* Modified for running the Arcadia Classica OTL LED Unit Range (4 Channels, limited to 80% PWM Duty Cycle)
+* Prints debug to Serial (Time/Date + Channel Power Output in %)
+* Detects and traps RTC "165" error.
+* Error LED Config.
+
+Future Additions:
+* LCD Output
+* PCB Generation, and Schematics + Notes on programming the chip, and restting the Clock.
+* LED per Output Channel to show "On"
+* Power/Running LED.
+
+Tested On:
+* Arduino Leonardo
+
+To Test:
+* Arduino Uno
+* Atmega328P-Pu (Breadboard/PCB)
+
 This is an 'advanced' 24 hour light scheduler designed for DIY Aquarium lighting
 
 It allows for easy creation of pretty much any 24 hour light schedule imaginable within the limitations of the Arduino used.
