@@ -286,6 +286,18 @@ void PrintTimeToSerial (DateTime currentTime){
         }
 }
 
+void InitDisplay(){
+        twilcd.clear();
+        twilcd.setCursor (0,0);
+        twilcd.print("Front: ");
+        twilcd.setCursor (0,1);
+        twilcd.print("Blue:  ");
+        twilcd.setCursor (0,2);
+        twilcd.print("Day:   ");
+        twilcd.setCursor (0,3);
+        twilcd.print("Back:  ");
+}
+
 void Error(){
       int var = 0;
       //// CODE HERE
@@ -298,12 +310,13 @@ void Error(){
       printf("Connections and PCB");
       twilcd.setCursor (0,3);
       printf("Soldering!");
-      while (var == 0){
+      for(int var = 0; var < 5; var++)
+      {
         twilcd.setBacklight(LOW);
         delay(1000);
-        twilcd.setBacklight(HIGH);
+        twilcd.setBacklig  ht(HIGH);
         delay(1000);
-      }
+      }     
 }
 
 // Convert HH:mm:ss -> Seconds since midnight
@@ -328,17 +341,9 @@ void setup() {
         printf("LIGHT CONTROLLER v.1");
         printf("  STARTING ARCADIA  ");
         printf("********************");
-        delay(3000);
-        twilcd.clear();
-        twilcd.setCursor (0,0);
-        twilcd.print("Front: ");
-        twilcd.setCursor (0,1);
-        twilcd.print("Blue:  ");
-        twilcd.setCursor (0,2);
-        twilcd.print("Day:   ");
-        twilcd.setCursor (0,3);
-        twilcd.print("Back:  ");        
-  
+        delay(3000);        
+        InitDisplay();
+        
 	// Initialize channel schedules
 	InitializeChannels(MaxChannels);
 
@@ -362,6 +367,7 @@ void loop() {
            // hit the dreaded "DS1307 165" Error due to an errornous board!
            // Light up the ERROR LED Pin!!
            Error();
+           InitDisplay();
         }
 
 	// Update lights
