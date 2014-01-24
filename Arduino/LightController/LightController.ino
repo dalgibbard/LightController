@@ -67,6 +67,7 @@ NOTE: References to "Front" and "Back" for the Blue/White LED channels assume th
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include "ChannelManager.h"
+#include <avr/wdt.h>
 
 // ----------------------- Constants -----------------------
 
@@ -87,6 +88,11 @@ LiquidCrystal_I2C twilcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_p
 #define EMBEDDED_LED_PIN    13
 byte ledState = LOW;
 
+// Change the below to "True" if you need to set the RTC time on next upload.
+// NOTE: Be sure to Disable again immediately after, and re-Upload, else time will be errornously set on every restart
+//       of the Arduino!!
+const char* setTime = "False";
+
 // ----------------------- Variables -----------------------
 // RTC
 RTC_DS1307 RTC;
@@ -97,6 +103,7 @@ DateTime CurrentTime;
 
 // secs for Time Display
 int secs = 0;
+int errorCount = 0;
 
 // ----------------------- Lights -----------------------
 
@@ -207,44 +214,85 @@ void UpdateLights(DateTime currentTime)
 	long now = Seconds(currentTime.hour(), currentTime.minute(), currentTime.second());	// Convert current time to seconds since midnight
 	if(now != lastUpdateTime)  	// Perform update only if there is a perceivable change in time (no point wasting clock cycles otherwise)
 	{
+           // Set out Time/Date display values.
+           int nowHour = currentTime.hour();
+           int nowMin = currentTime.minute();
+           int nowDay = currentTime.day();
+           int nowMonth = currentTime.month();
+           
                 /// PRINT THE TIME ON THE TOP RIGHT OF THE DISPLAY
                 twilcd.setCursor (15,0);
-                if(int(currentTime.hour()) < 10 ){
+                if(nowHour < 10 ){
                   twilcd.print("0");
+                  twilcd.print(nowHour);
                 }
-                twilcd.print(int(currentTime.hour()));
+                else if(nowHour > 23){
+                  Error();
+                  return;
+                }
+                else{
+                  twilcd.print(nowHour);
+                }
+                
+                // Print Time Seperator
                 twilcd.print(":");
-                if(int(currentTime.minute()) < 10 ){
+                
+                if(nowMin < 10 ){
                   twilcd.print("0");
+                  twilcd.print(nowMin);
                 }
-                twilcd.print(int(currentTime.minute()));
+                else if(nowMin > 59){
+                  Error();
+                  return;
+                }
+                else {
+                  twilcd.print(nowMin);
+                }
+
+                /// PRINT THE DATE AT THE BOTTOM RIGHT OF THE DISPLAY                
                 twilcd.setCursor (15,4);
-                if(int(currentTime.day()) < 10 ){
+                if(nowDay < 10 ){
                   twilcd.print("0");
+                  twilcd.print(nowDay);
+                }
+                else if(nowDay > 31){
+                  Error();
+                  return;
+                }
+                else{
+                  twilcd.print(nowDay);
                 }
                 
-                /// PRINT THE DATE AT THE BOTTOM RIGHT OF THE DISPLAY
-                twilcd.print(int(currentTime.day()));
                 twilcd.print("/");
-                if(int(currentTime.month()) < 10 ){
+                if(nowMonth < 10 ){
                   twilcd.print("0");
+                  twilcd.print(nowMonth);
                 }
-                twilcd.print(int(currentTime.month()));
-                
+                else if(nowMonth > 12 ) {
+                  Error();
+                  return;
+                }
+                else{
+                  twilcd.print(nowMonth);
+                }
                 
                 for(int channel = 0; channel < MaxChannels; channel++)    		// For each Channel
 		{
+                        // Set the PWM Duty Cycle
 			analogWrite(Channels[channel].GetPin(), Channels[channel].GetLightIntensityInt(now));	// Get updated light intensity and write value to pin (update is performed when reading value)
-                            twilcd.setCursor (7, channel);
-                            // Calculate the Percentage output based on current Intensity (And
-                            //    the recommended maximum output of "204" - See notes at top.
-                            float intensityNow = Channels[channel].GetLightIntensityInt(now);
-                            float maxIntensity = 204;
-                            float a = intensityNow / maxIntensity;
-                            float currentPercent = a * 100;
-                            twilcd.print(int(currentPercent)); // Print the % output- rounded roughly to an int.
-                            twilcd.print("%");
-                            twilcd.print("   ");
+
+                        // Go to the 7th Char on the LCD for the selected Channel...
+                        twilcd.setCursor (7, channel);
+                        
+                        // Calculate the Percentage output based on current Intensity (And
+                        //    the recommended maximum output of "204" - See notes at top.
+                        float intensityNow = Channels[channel].GetLightIntensityInt(now);
+                        float maxIntensity = 204;
+                        float a = intensityNow / maxIntensity;
+                        float currentPercent = a * 100;
+                        twilcd.print(int(currentPercent)); // Print the % output- rounded roughly to an int.
+                        twilcd.print("%");
+                        twilcd.print("   "); // The gap allows for flexing between single and triple digit percentages.
 		}
 	}
 	lastUpdateTime = now;
@@ -314,9 +362,10 @@ void Error(){
       {
         twilcd.setBacklight(LOW);
         delay(1000);
-        twilcd.setBacklig  ht(HIGH);
+        twilcd.setBacklight(HIGH);
         delay(1000);
       }     
+      InitDisplay();
 }
 
 // Convert HH:mm:ss -> Seconds since midnight
@@ -341,7 +390,7 @@ void setup() {
         printf("LIGHT CONTROLLER v.1");
         printf("  STARTING ARCADIA  ");
         printf("********************");
-        delay(3000);        
+        delay(500);        
         InitDisplay();
         
 	// Initialize channel schedules
@@ -350,7 +399,17 @@ void setup() {
 	// Clock
 	Wire.begin();
 	RTC.begin();
-	//RTC.adjust(DateTime(__DATE__, __TIME__));  // Set RTC time to sketch compilation time, only use for 1 (ONE) run. Will reset time at each device reset!
+    
+        // If the user needs to set the RTC Time and has set the Var at the start, do it:
+        if( setTime == "True" ){
+            RTC.adjust(DateTime(__DATE__, __TIME__));  // Set RTC time to sketch compilation time, only use for 1 (ONE) run. Will reset time at each device reset!
+        }
+}
+
+void Reboot(){
+  wdt_enable(WDTO_15MS);
+  while(1){
+  }
 }
 
 // ----------------------- Loop -----------------------
@@ -365,11 +424,17 @@ void loop() {
         if (CurrentTime.second() > 59){
            // If we've noticed that the seconds are an invalid value, then we've probably
            // hit the dreaded "DS1307 165" Error due to an errornous board!
-           // Light up the ERROR LED Pin!!
+           // Blink the LCD via the "Error()" function, and Reboot if weve had the issue five times.
+           
            Error();
+           if (errorCount > 4){
+             Reboot();
+           }
+           errorCount++;
            InitDisplay();
         }
-
-	// Update lights
-	UpdateLights(CurrentTime);
+        else{
+	   // Update lights
+	   UpdateLights(CurrentTime);
+        }
 }
