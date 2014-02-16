@@ -29,10 +29,10 @@ NOTE: References to "Front" and "Back" for the Blue/White LED channels assume th
   ------------------------------------------------------------------------------------------------------------------------------------------
   |  LIGHT UNIT LABEL  |   CABLE COLOUR  |  DB9 PIN (MALE) |  CONTR. CHAN. NO.  |       Light        |   CODED CHANNEL NO. |  Arduino Pin  |
   ------------------------------------------------------------------------------------------------------------------------------------------
-  |   Channel A        |     Yellow      |       7         |        1           |  Blue/White Front  |   channelsNo = 0    |        5      |
-  |   Channel B        |     Green       |       2         |        2           |  Actinic Blue (3W) |   channelsNo = 1    |        6      | 
-  |   Channel C        |     Blue        |       6         |        3           |  Day White (10W)   |   channelsNo = 2    |        9      |
-  |   Channel D        |     White       |       1         |        4           |  Blue/White Back   |   channelsNo = 3    |       10      |
+  |   Channel A        |     Yellow      |       7         |        1           |  Blue/White Front  |   channelsNo = 0    |        6      |
+  |   Channel B        |     Green       |       2         |        2           |  Actinic Blue (3W) |   channelsNo = 1    |        9      | 
+  |   Channel C        |     Blue        |       6         |        3           |  Day White (10W)   |   channelsNo = 2    |        10     |
+  |   Channel D        |     White       |       1         |        4           |  Blue/White Back   |   channelsNo = 3    |        11     |
   ------------------------------------------------------------------------------------------------------------------------------------------
      ### NOTE: The Arduino Pins were chosen based on the Arduino Leonardo - these are all 490Hz PWM Pins.
   
