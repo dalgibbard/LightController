@@ -166,6 +166,7 @@ void InitializeChannels(int channels) {
 	Channels[channelNo].AddPoint(14, 45, 153);
 	Channels[channelNo].AddPoint(18, 15, 153);
 	Channels[channelNo].AddPoint(20, 0, 102);
+        Channels[channelNo].AddPoint(21, 30, 51);
 	Channels[channelNo].AddPoint(22, 0, 0);
 
         // Channel 2: Daylight White
