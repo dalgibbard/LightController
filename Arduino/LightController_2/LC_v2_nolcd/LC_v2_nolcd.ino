@@ -313,6 +313,26 @@ void setup() {
         pinMode(CHAN1_LED_PIN, OUTPUT);
         pinMode(CHAN2_LED_PIN, OUTPUT);
         pinMode(CHAN3_LED_PIN, OUTPUT);
+        
+        // LED TEST
+        digitalWrite(EMBEDDED_LED_PIN, HIGH);
+        delay(250);
+        digitalWrite(EMBEDDED_LED_PIN, LOW);
+        delay(250);
+        digitalWrite(EMBEDDED_LED_PIN, HIGH);
+        delay(250);
+        digitalWrite(EMBEDDED_LED_PIN, LOW);
+        delay(250);
+        digitalWrite(CHAN0_LED_PIN, HIGH);
+        delay(250);
+        digitalWrite(CHAN1_LED_PIN, HIGH);
+        delay(250);
+        digitalWrite(CHAN2_LED_PIN, HIGH);
+        delay(250);
+        digitalWrite(CHAN3_LED_PIN, HIGH);
+        delay(250);
+        
+        // LED Final State
         digitalWrite(EMBEDDED_LED_PIN, LOW);
         digitalWrite(CHAN0_LED_PIN, LOW);
         digitalWrite(CHAN1_LED_PIN, LOW);
